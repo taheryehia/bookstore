@@ -1,46 +1,49 @@
+'use client';
 import Link from "next/link";
-import { auth } from "@/auth";
-import { User, Package } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { usePathname } from "next/navigation";
+import { User, ShoppingBag, Package } from "lucide-react";
 import { SignOutButton } from "./SignOutButton";
 
-export async function Header() {
-    const session = await auth();
+export function Header() {
+    const { data: session } = useSession();
+    const pathname = usePathname();
+
+    const isAuthPage = pathname === "/login" || pathname === "/register";
+
+    if (isAuthPage) return null;
 
     return (
-        <nav className="flex justify-between items-center px-6 py-5 md:px-12 sticky top-0 glass-premium z-50 transition-all duration-300">
-            <Link href="/" className="text-xs font-bold tracking-[0.25em] uppercase hover:text-stone-500 transition-colors">
-                Editorial
-            </Link>
-
-            <div className="flex items-center gap-6">
-                <Link
-                    href="/orders"
-                    className="text-xs font-medium uppercase tracking-widest hover:text-stone-500 transition-colors flex items-center gap-2"
-                >
-                    <Package size={14} />
-                    <span className="hidden sm:inline">Orders</span>
+        <nav className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-[20px] transition-colors duration-300 border-b border-outline-variant/10">
+            <div className="flex justify-between items-center px-8 py-6 max-w-screen-2xl mx-auto w-full">
+                <Link href="/" className="text-2xl font-headline italic text-primary hover:opacity-80 transition-opacity">
+                    The Literary Atelier
                 </Link>
 
-                {session?.user ? (
-                    <div className="flex items-center gap-4">
-                        <Link
-                            href="/profile"
-                            className="text-xs font-medium uppercase tracking-widest hover:text-stone-500 transition-colors flex items-center gap-2 truncate max-w-[100px] md:max-w-[150px]"
-                        >
-                            <User size={14} className="md:hidden" />
-                            <span className="truncate">{session.user.name || session.user.email}</span>
-                        </Link>
-                        <SignOutButton />
-                    </div>
-                ) : (
-                    <Link
-                        href="/login"
-                        className="text-xs font-medium uppercase tracking-widest hover:text-stone-500 transition-colors flex items-center gap-2"
-                    >
-                        <User size={14} />
-                        <span className="">Sign In</span>
+                <div className="hidden md:flex items-center space-x-12 font-headline font-medium tracking-tight">
+                    <Link href="/" className={`${pathname === '/' ? 'text-primary border-b-2 border-primary' : 'text-secondary'} pb-1 hover:text-primary transition-colors`}>Collections</Link>
+                    <Link href="/authors" className="text-secondary hover:text-primary transition-colors">Authors</Link>
+                    <Link href="/journal" className="text-secondary hover:text-primary transition-colors">Journal</Link>
+                </div>
+
+                <div className="flex items-center space-x-6 text-primary">
+                    <Link href="/orders" className="hover:opacity-70 transition-opacity scale-100 active:scale-90 duration-200">
+                        <ShoppingBag size={22} strokeWidth={1.5} />
                     </Link>
-                )}
+
+                    {session?.user ? (
+                        <Link href="/profile" className="hover:opacity-70 transition-opacity scale-100 active:scale-90 duration-200 flex items-center gap-2">
+                            <User size={22} strokeWidth={1.5} />
+                            <span className="hidden lg:inline font-label text-[10px] uppercase tracking-widest text-secondary truncate max-w-[80px]">
+                                {session.user.name || session.user.email}
+                            </span>
+                        </Link>
+                    ) : (
+                        <Link href="/login" className="hover:opacity-70 transition-opacity scale-100 active:scale-90 duration-200">
+                            <User size={22} strokeWidth={1.5} />
+                        </Link>
+                    )}
+                </div>
             </div>
         </nav>
     );

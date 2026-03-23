@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSession, signOut } from "next-auth/react";
-import { Pencil, X, Check, ShieldAlert, Mail, Loader2, RefreshCw, ArrowRight } from "lucide-react";
-import { authButtonClasses, authInputClasses } from "../auth/styles";
+import { Pencil, X, Check, ShieldAlert, Mail, Loader2, RefreshCw, ArrowRight, Edit3, LogOut } from "lucide-react";
 
 export default function ProfilePage() {
     const { data: session, update } = useSession();
@@ -12,11 +11,9 @@ export default function ProfilePage() {
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
 
-    // Local state for name and email to ensure UI freshness
     const [userName, setUserName] = useState("");
     const [userEmail, setUserEmail] = useState("");
 
-    // Sync local state when session loads or updates
     useEffect(() => {
         if (session?.user) {
             setUserName(session.user.name || "");
@@ -24,7 +21,6 @@ export default function ProfilePage() {
         }
     }, [session]);
 
-    // Verification related state
     const [showVerify, setShowVerify] = useState(false);
     const [tempEmail, setTempEmail] = useState("");
     const [verifyCode, setVerifyCode] = useState(['', '', '', '', '', '']);
@@ -51,7 +47,6 @@ export default function ProfilePage() {
             });
 
             const updatedUser = await res.json();
-
             if (!res.ok) throw new Error(updatedUser.error || "Failed to update profile");
 
             if (updatedUser.emailVerificationPending) {
@@ -59,15 +54,11 @@ export default function ProfilePage() {
                 setShowVerify(true);
                 setIsEditing(false);
             } else {
-                // If only name was changed
                 setUserName(updatedUser.name);
-                await update({
-                    name: updatedUser.name
-                });
+                await update({ name: updatedUser.name });
                 setMessage("Profile updated successfully.");
                 setIsEditing(false);
             }
-
         } catch (err: any) {
             setError(err.message || "Update failed. Please try again.");
         } finally {
@@ -79,30 +70,20 @@ export default function ProfilePage() {
         e.preventDefault();
         setVerifying(true);
         setError("");
-
         const fullCode = verifyCode.join('');
-
         try {
             const res = await fetch("/api/profile/verify-email", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: tempEmail, code: fullCode }),
             });
-
             const result = await res.json();
             if (!res.ok) throw new Error(result.error || "Verification failed");
-
-            // CRITICAL: Force a full session update with the new email
             setUserEmail(tempEmail);
-            await update({
-                email: tempEmail,
-                name: result.name || session?.user?.name
-            });
-
+            await update({ email: tempEmail, name: result.name || session?.user?.name });
             setMessage("Email updated and verified successfully.");
             setShowVerify(false);
             setVerifyCode(['', '', '', '', '', '']);
-
         } catch (err: any) {
             setError(err.message || "Incorrect verification code.");
         } finally {
@@ -115,8 +96,7 @@ export default function ProfilePage() {
         setError("");
         try {
             const res = await fetch("/api/register/resend", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
+                method: "POST", headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: tempEmail }),
             });
             if (!res.ok) throw new Error("Failed to resend");
@@ -130,15 +110,10 @@ export default function ProfilePage() {
 
     async function handleDeleteAccount() {
         if (!confirm("CRITICAL: This will permanently delete your account and all order history. This cannot be undone. Proceed?")) return;
-
         try {
             const res = await fetch("/api/profile", { method: "DELETE" });
-            if (res.ok) {
-                await signOut({ callbackUrl: "/" });
-            }
-        } catch (err) {
-            alert("Failed to delete account.");
-        }
+            if (res.ok) await signOut({ callbackUrl: "/" });
+        } catch (err) { alert("Failed to delete account."); }
     }
 
     function handleVerifyCodeChange(index: number, value: string) {
@@ -150,148 +125,195 @@ export default function ProfilePage() {
     }
 
     if (!session) return (
-        <div className="min-h-screen flex items-center justify-center p-6 text-stone-500 font-serif italic bg-stone-50">
-            Authenticating...
+        <div className="min-h-screen flex items-center justify-center p-6 text-secondary font-headline italic bg-background">
+            Authenticating your provenance...
         </div>
     );
 
     return (
-        <section className="min-h-screen px-6 py-24 max-w-xl mx-auto bg-stone-50/50">
-            {!showVerify ? (
-                <div className="glass-card p-8 md:p-12 rounded-3xl animate-fade-in shadow-xl backdrop-blur-xl">
-                    <div className="flex justify-between items-end mb-12">
-                        <div>
-                            <h1 className="text-3xl font-serif text-stone-900 mb-2">Account Details</h1>
-                            <p className="text-stone-500 font-serif italic text-sm">Review or modify your records.</p>
+        <main className="min-h-screen pt-32 pb-48 px-6 flex flex-col items-center justify-center bg-background">
+            <div className="w-full max-w-2xl bg-surface-container-lowest shadow-ambient rounded-sm overflow-hidden relative border border-outline-variant/10 animate-fade-in-up">
+                {!showVerify ? (
+                    <>
+                        {/* Header Section */}
+                        <div className="p-10 md:p-14 flex justify-between items-start">
+                            <div className="flex flex-col gap-1">
+                                <h1 className="font-headline text-3xl md:text-4xl text-primary tracking-tight font-light">Account Details</h1>
+                                <p className="font-body text-secondary text-sm tracking-wide">Review or modify your records.</p>
+                            </div>
+
+                            <button
+                                onClick={() => setIsEditing(!isEditing)}
+                                className={`flex items-center space-x-2 px-4 py-2 font-label text-[0.7rem] font-bold uppercase tracking-[0.15em] transition-all rounded-md group ${isEditing ? 'text-error hover:bg-error/5' : 'text-primary hover:bg-surface-container-low'}`}
+                            >
+                                {isEditing ? (
+                                    <>
+                                        <X size={16} />
+                                        <span>CANCEL</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Edit3 size={16} className="group-hover:scale-110 transition-transform" />
+                                        <span>EDIT</span>
+                                    </>
+                                )}
+                            </button>
                         </div>
 
-                        {!isEditing ? (
-                            <button
-                                onClick={() => setIsEditing(true)}
-                                className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-colors glass-button px-4 py-2 rounded-full"
-                            >
-                                <Pencil size={14} />
-                                Edit
-                            </button>
-                        ) : (
-                            <button
-                                onClick={() => setIsEditing(false)}
-                                className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-red-400 hover:text-red-900 transition-colors glass-button px-4 py-2 rounded-full"
-                            >
-                                <X size={14} />
-                                Cancel
-                            </button>
-                        )}
-                    </div>
+                        {/* Profile Content */}
+                        <div className="px-10 md:px-14 pb-14">
+                            <form onSubmit={handleUpdate} className="space-y-12">
+                                {message && (
+                                    <div className="p-4 bg-green-50 text-green-800 text-[0.7rem] uppercase tracking-widest font-bold border border-green-100 flex items-center gap-3 animate-slide-up rounded-md mb-8">
+                                        <Check size={14} /> {message}
+                                    </div>
+                                )}
+                                {error && (
+                                    <div className="p-4 bg-error-container/30 text-error text-[0.7rem] uppercase tracking-widest font-bold border border-error/5 flex items-center gap-3 animate-slide-up rounded-md mb-8">
+                                        <ShieldAlert size={14} /> {error}
+                                    </div>
+                                )}
 
-                    <div className="space-y-12">
-                        <form onSubmit={handleUpdate} className="flex flex-col gap-8">
-                            {message && (
-                                <div className="p-4 glass-frosted text-stone-900 text-xs uppercase tracking-widest flex items-center gap-3 animate-slide-up rounded-xl">
-                                    <Check size={14} className="text-green-600" /> {message}
-                                </div>
-                            )}
-                            {error && (
-                                <div className="p-4 bg-red-50/50 backdrop-blur-sm text-red-800 text-xs uppercase tracking-widest border border-red-100 flex items-center gap-3 rounded-xl">
-                                    <ShieldAlert size={14} /> {error}
-                                </div>
-                            )}
-
-                            <div className="grid gap-6">
-                                <div>
-                                    <label className="text-[10px] uppercase tracking-[0.2em] text-stone-400 block mb-3 font-bold">Name</label>
-                                    <input
-                                        name="name"
-                                        type="text"
-                                        key={`name-${userName}`}
-                                        defaultValue={userName}
-                                        readOnly={!isEditing}
-                                        className={`${authInputClasses} ${!isEditing ? 'bg-transparent cursor-default border-transparent px-0' : 'bg-white/40 focus:bg-white/60'} transition-all duration-300 rounded-lg px-2`}
-                                    />
+                                {/* Data Field: Name */}
+                                <div className="relative group">
+                                    <label className="block font-label text-[0.7rem] font-bold uppercase tracking-[0.2em] text-on-secondary-container mb-3">NAME</label>
+                                    {isEditing ? (
+                                        <input
+                                            name="name"
+                                            type="text"
+                                            defaultValue={userName}
+                                            className="w-full bg-transparent border-0 border-b border-primary py-3 px-0 focus:ring-0 font-headline text-xl text-primary"
+                                            required
+                                        />
+                                    ) : (
+                                        <div className="text-xl font-headline text-primary border-b border-outline-variant/30 pb-4 group-hover:border-primary transition-colors">
+                                            {userName}
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div>
-                                    <label className="text-[10px] uppercase tracking-[0.2em] text-stone-400 block mb-3 font-bold">Email Address</label>
-                                    <input
-                                        name="email"
-                                        type="email"
-                                        key={`email-${userEmail}`}
-                                        defaultValue={userEmail}
-                                        readOnly={!isEditing}
-                                        className={`${authInputClasses} ${!isEditing ? 'bg-transparent cursor-default border-transparent px-0' : 'bg-white/40 focus:bg-white/60'} transition-all duration-300 rounded-lg px-2`}
-                                    />
+                                {/* Data Field: Email */}
+                                <div className="relative group">
+                                    <label className="block font-label text-[0.7rem] font-bold uppercase tracking-[0.2em] text-on-secondary-container mb-3">EMAIL ADDRESS</label>
+                                    {isEditing ? (
+                                        <input
+                                            name="email"
+                                            type="email"
+                                            defaultValue={userEmail}
+                                            className="w-full bg-transparent border-0 border-b border-primary py-3 px-0 focus:ring-0 font-headline text-xl text-primary"
+                                            required
+                                        />
+                                    ) : (
+                                        <div className="text-xl font-headline text-primary border-b border-outline-variant/30 pb-4 group-hover:border-primary transition-colors">
+                                            {userEmail}
+                                        </div>
+                                    )}
                                 </div>
 
+                                {/* Password (only during editing) */}
                                 {isEditing && (
-                                    <div className="pt-4 border-t border-stone-100/50 mt-4 animate-scale-in">
-                                        <label className="text-[10px] uppercase tracking-[0.2em] text-stone-400 block mb-3 font-bold">Update Key (Password)</label>
+                                    <div className="relative group animate-scale-in">
+                                        <label className="block font-label text-[0.7rem] font-bold uppercase tracking-[0.2em] text-on-secondary-container mb-3">UPDATE AUTHORIZATION (PASSWORD)</label>
                                         <input
                                             name="password"
                                             type="password"
-                                            placeholder="Leave blank to keep unchanged"
-                                            className={`${authInputClasses} bg-white/40 focus:bg-white/60 rounded-lg px-2`}
+                                            placeholder="Leave blank to keep current"
+                                            className="w-full bg-transparent border-0 border-b border-primary py-3 px-0 focus:ring-0 font-headline text-xl text-primary placeholder:text-outline-variant/30"
                                             minLength={6}
                                         />
-                                        <p className="text-[10px] text-stone-400 mt-3 italic leading-relaxed">
-                                            Keep this blank unless you wish to revise your authorization credentials.
-                                        </p>
                                     </div>
                                 )}
-                            </div>
 
-                            {isEditing && (
-                                <button type="submit" disabled={loading} className={`${authButtonClasses} mt-4 rounded-xl shadow-lg border border-white/20`}>
-                                    {loading ? "Syncing..." : "Apply Changes"}
-                                </button>
+                                {isEditing && (
+                                    <div className="pt-8">
+                                        <button
+                                            type="submit"
+                                            disabled={loading}
+                                            className="btn-primary w-full py-5 flex items-center justify-center gap-3"
+                                        >
+                                            {loading && <Loader2 className="animate-spin" size={16} />}
+                                            {loading ? "SYNCING..." : "APPLY CHANGES"}
+                                        </button>
+                                    </div>
+                                )}
+                            </form>
+
+                            {!isEditing && (
+                                <div className="pt-12 opacity-10 flex justify-center">
+                                    <div className="h-[1px] w-12 bg-primary"></div>
+                                </div>
                             )}
-                        </form>
+                        </div>
 
+                        {/* Session Management */}
                         {!isEditing && (
-                            <div className="pt-20 border-t border-stone-100/50">
-                                <div className="p-8 glass-card rounded-2xl border-stone-100">
-                                    <h2 className="text-xs uppercase tracking-widest text-red-500 mb-2 font-bold flex items-center gap-2">
-                                        <ShieldAlert size={14} /> Danger Zone
-                                    </h2>
-                                    <p className="text-xs text-stone-500 mb-6 leading-relaxed">
-                                        Permanent erasure of your identity and purchase history. This process is irreversible and all digital assets will be lost.
+                            <div className="p-10 md:p-14 border-t border-outline-variant/10">
+                                <div className="flex flex-col space-y-6">
+                                    <div className="flex items-center space-x-3">
+                                        <LogOut className="text-secondary" size={20} />
+                                        <h2 className="font-label text-[0.75rem] font-bold uppercase tracking-[0.15em] text-secondary">SESSION MANAGEMENT</h2>
+                                    </div>
+                                    <p className="font-body text-sm text-secondary leading-relaxed max-w-md">
+                                        Disconnect your current session from this device. You will need to re-authenticate to access your archive.
                                     </p>
                                     <button
-                                        onClick={handleDeleteAccount}
-                                        className="text-[10px] uppercase tracking-[0.2em] font-bold text-red-500 border border-red-200 px-6 py-3 hover:bg-red-500 hover:text-white transition-all w-full rounded-lg glass-button"
+                                        onClick={() => {
+                                            if (confirm("Are you sure you want to sign out?")) {
+                                                signOut({ callbackUrl: "/" });
+                                            }
+                                        }}
+                                        className="w-full md:w-max px-8 py-4 bg-transparent border border-outline-variant/30 text-secondary font-label text-[0.7rem] font-bold uppercase tracking-[0.15em] rounded-md hover:bg-error hover:border-error hover:text-white transition-all duration-300 group"
                                     >
-                                        Delete Account Permanently
+                                        <span className="flex items-center gap-2 justify-center">
+                                            SIGN OUT
+                                            <LogOut size={14} className="opacity-70 group-hover:-translate-x-1 group-hover:opacity-100 transition-all" />
+                                        </span>
                                     </button>
                                 </div>
                             </div>
                         )}
-                    </div>
-                </div>
-            ) : (
-                <div className="animate-fade-in glass-card p-8 md:p-12 rounded-3xl shadow-xl">
-                    <button
-                        onClick={() => setShowVerify(false)}
-                        className="flex items-center gap-2 text-xs uppercase tracking-widest text-stone-400 hover:text-stone-900 transition-colors mb-12 glass-button px-4 py-2 rounded-full"
-                    >
-                        <ArrowRight size={14} className="rotate-180" /> Back
-                    </button>
 
-                    <div className="text-center">
-                        <div className="inline-flex items-center justify-center w-16 h-16 bg-stone-900 text-stone-50 rounded-full mb-8 shadow-lg shadow-stone-200">
-                            <Mail size={24} />
+                        {/* Danger Zone */}
+                        {!isEditing && (
+                            <div className="bg-error-container/10 p-10 md:p-14 border-t border-error/5">
+                                <div className="flex flex-col space-y-6">
+
+                                    <div className="flex items-center space-x-3">
+                                        <ShieldAlert className="text-error" size={20} />
+                                        <h2 className="font-label text-[0.75rem] font-bold uppercase tracking-[0.15em] text-error">DANGER ZONE</h2>
+                                    </div>
+                                    <p className="font-body text-sm text-secondary leading-relaxed max-w-md">
+                                        Permanent erasure of your identity and purchase history. This process is irreversible and all digital assets will be lost.
+                                    </p>
+                                    <button
+                                        onClick={handleDeleteAccount}
+                                        className="w-full md:w-max px-8 py-4 bg-transparent border border-error/30 text-error font-label text-[0.7rem] font-bold uppercase tracking-[0.15em] rounded-md hover:bg-error hover:text-white transition-all duration-300"
+                                    >
+                                        DELETE ACCOUNT PERMANENTLY
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                ) : (
+                    <div className="p-10 md:p-14 animate-fade-in text-center">
+                        <button
+                            onClick={() => setShowVerify(false)}
+                            className="flex items-center gap-2 text-xs font-label font-bold uppercase tracking-widest text-secondary hover:text-primary transition-colors mb-12"
+                        >
+                            <ArrowRight size={14} className="rotate-180" /> Back
+                        </button>
+
+                        <div className="inline-flex items-center justify-center w-20 h-20 bg-primary text-on-primary rounded-full mb-8 shadow-ambient">
+                            <Mail size={32} strokeWidth={1} />
                         </div>
-                        <h2 className="text-2xl font-serif text-stone-900 mb-2">Verify email update</h2>
-                        <p className="text-stone-500 text-sm mb-10 leading-relaxed font-light">
-                            Confirm ownership of <span className="font-semibold text-stone-900 underline underline-offset-4">{tempEmail}</span> by entering the code provided via dispatch.
+                        <h2 className="text-3xl font-headline text-primary mb-3">Verify email update</h2>
+                        <p className="text-secondary text-sm mb-12 leading-relaxed max-w-xs mx-auto italic font-body">
+                            Confirm ownership of <span className="font-bold underline underline-offset-4">{tempEmail}</span> by entering the code provided via dispatch.
                         </p>
 
-                        <form onSubmit={handleVerifyEmail} className="space-y-10">
-                            {error && (
-                                <div className="p-4 bg-red-50/60 backdrop-blur-md text-red-800 text-xs uppercase tracking-widest border border-red-100 animate-scale-in rounded-lg">
-                                    <ShieldAlert size={14} className="inline mr-2" /> {error}
-                                </div>
-                            )}
-
-                            <div className="flex justify-center gap-3">
+                        <form onSubmit={handleVerifyEmail} className="space-y-12">
+                            <div className="flex justify-center gap-4">
                                 {verifyCode.map((digit, index) => (
                                     <input
                                         key={index}
@@ -301,7 +323,7 @@ export default function ProfilePage() {
                                         maxLength={1}
                                         value={digit}
                                         onChange={(e) => handleVerifyCodeChange(index, e.target.value)}
-                                        className="w-10 h-14 md:w-12 md:h-16 text-center text-2xl font-serif border-b-2 border-stone-200 focus:border-stone-900 focus:outline-none transition-all bg-transparent"
+                                        className="w-12 h-16 text-center text-3xl font-headline border-b-2 border-outline-variant focus:border-primary focus:outline-none transition-all bg-transparent text-primary"
                                         required
                                     />
                                 ))}
@@ -310,27 +332,36 @@ export default function ProfilePage() {
                             <button
                                 type="submit"
                                 disabled={verifying}
-                                className={`${authButtonClasses} shadow-lg rounded-xl border border-white/20`}
+                                className="btn-primary w-full py-5"
                             >
-                                {verifying ? <Loader2 className="animate-spin inline mr-2" size={16} /> : null}
-                                Verify & Update
+                                {verifying ? <Loader2 className="animate-spin inline mr-2" size={16} /> : "VERIFY & UPDATE"}
                             </button>
                         </form>
 
-                        <div className="mt-12 pt-8 border-t border-stone-100/50">
-                            <p className="text-[10px] text-stone-400 mb-4 uppercase tracking-[0.2em] font-bold">Unreceived transmission?</p>
+                        <div className="mt-16 pt-12 border-t border-outline-variant/10">
+                            <p className="font-label text-xs text-outline uppercase tracking-widest mb-6">Unreceived transmission?</p>
                             <button
                                 onClick={handleResendCode}
                                 disabled={resending}
-                                className="text-xs font-bold uppercase tracking-widest text-stone-900 hover:text-stone-500 transition-colors inline-flex items-center gap-2 disabled:opacity-50 glass-button px-6 py-3 rounded-full"
+                                className="font-label text-xs font-bold uppercase tracking-widest text-primary hover:opacity-60 transition-opacity inline-flex items-center gap-3"
                             >
-                                {resending ? <RefreshCw size={12} className="animate-spin" /> : null}
+                                {resending && <RefreshCw size={12} className="animate-spin" />}
                                 Resend verification code
                             </button>
                         </div>
                     </div>
-                </div>
-            )}
-        </section>
+                )}
+            </div>
+
+            {/* Secondary Info (Editorial Space) */}
+            <div className="mt-20 text-center max-w-sm animate-fade-in stagger-2">
+                <p className="font-body text-base italic text-secondary leading-relaxed">
+                    "A library is not a luxury but one of the necessities of life."
+                </p>
+                <div className="h-[1px] w-8 bg-primary/20 mx-auto my-4"></div>
+                <p className="font-label text-[0.65rem] uppercase tracking-widest text-on-secondary-container">Henry Ward Beecher</p>
+            </div>
+        </main>
     );
 }
+

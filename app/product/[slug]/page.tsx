@@ -1,8 +1,9 @@
 import { getProduct, products } from "@/lib/products";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, ArrowLeft, Shield, Truck } from "lucide-react";
 import Image from "next/image";
+import { auth } from "@/auth";
+
 
 export async function generateStaticParams() {
     return products.map((product) => ({
@@ -20,13 +21,14 @@ export default async function ProductPage({
     const { slug } = await params;
     const { canceled } = await searchParams;
     const product = getProduct(slug);
+    const session = await auth();
 
     if (!product) {
         notFound();
     }
 
     return (
-        <article className="animate-fade-in">
+        <article className="animate-fade-in pb-24">
             {/* Cancellation Notice */}
             {canceled && (
                 <div className="bg-amber-50 border-b border-amber-200 px-6 py-4 text-center animate-scale-in">
@@ -36,79 +38,109 @@ export default async function ProductPage({
                 </div>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 min-h-[80vh] items-start px-6 md:px-12 pt-12 pb-24">
-                {/* Image */}
-                <div className="aspect-[3/4] bg-stone-100 relative overflow-hidden rounded-lg shadow-xl shadow-stone-200/50 animate-slide-in-left">
-                    {product.image ? (
-                        <Image
-                            src={product.image}
-                            alt={product.title}
-                            fill
-                            className="object-cover hover:scale-105 transition-transform duration-700"
-                            priority
-                        />
-                    ) : (
-                        <div className="absolute inset-0 bg-stone-200 flex items-center justify-center text-stone-400 font-serif italic text-2xl">
-                            {product.title}
+            <main className="pt-32 lg:pt-48 max-w-7xl mx-auto px-6 lg:px-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-24 items-start">
+
+                    {/* Book Visual Section (Left) */}
+                    <div className="lg:col-span-7 relative group">
+                        {/* Decorative background element from design */}
+                        <div className="absolute -top-10 -left-10 w-48 h-48 bg-surface-container-low -z-10 rounded-lg"></div>
+
+                        <div className="bg-surface-container-lowest shadow-sm p-6 md:p-12 relative overflow-hidden rounded-sm">
+                            <div className="aspect-[4/5] relative w-full shadow-2xl transition-transform duration-700 group-hover:scale-[1.01]">
+                                {product.image ? (
+                                    <Image
+                                        src={product.image}
+                                        alt={product.title}
+                                        fill
+                                        className="object-cover"
+                                        priority
+                                        sizes="(max-width: 768px) 100vw, 60vw"
+                                    />
+                                ) : (
+                                    <div className="absolute inset-0 bg-surface-variant flex items-center justify-center font-headline italic text-primary/20 text-4xl">
+                                        {product.title}
+                                    </div>
+                                )}
+                            </div>
                         </div>
-                    )}
-                </div>
-
-                {/* Details */}
-                <div className="md:sticky md:top-32 flex flex-col gap-8 animate-slide-in-right glass-card p-8 md:p-12 rounded-3xl backdrop-blur-xl">
-                    <Link
-                        href="/"
-                        className="text-xs text-stone-400 hover:text-stone-900 transition-colors uppercase tracking-widest mb-4 flex items-center gap-2 group glass-button w-fit px-4 py-2 rounded-full"
-                    >
-                        <ArrowLeft size={14} className="transition-transform group-hover:-translate-x-1" />
-                        Back to Archive
-                    </Link>
-
-                    <div>
-                        <h1 className="text-3xl md:text-5xl font-serif font-medium mb-4 text-stone-900 text-balance">
-                            {product.title}
-                        </h1>
-                        <p className="text-xl text-stone-500 font-serif italic">{product.subtitle}</p>
                     </div>
 
-                    <div className="prose prose-stone prose-p:text-stone-600 prose-p:leading-relaxed">
-                        <p>{product.description}</p>
-                    </div>
+                    {/* Content Details Section (Right) */}
+                    <div className="lg:col-span-5 lg:sticky lg:top-40 space-y-12">
+                        {/* Header Section */}
+                        <div className="space-y-4">
+                            <span className="font-label text-[0.7rem] uppercase tracking-[0.3em] text-on-secondary-container">
+                                {product.category} & Aesthetics
+                            </span>
+                            <h1 className="font-headline text-5xl lg:text-7xl text-primary leading-[1.05] -tracking-[0.03em]">
+                                {product.title}
+                            </h1>
+                            <p className="font-headline italic text-2xl text-secondary font-normal">
+                                By {product.author}
+                            </p>
+                        </div>
 
-                    {/* Price & Purchase */}
-                    <div className="border-t border-stone-200/50 pt-8 mt-4">
-                        <div className="flex justify-between items-center mb-6">
-                            <span className="font-mono text-sm text-stone-500 uppercase tracking-widest">Price</span>
-                            <span className="text-3xl font-serif text-stone-900">
+                        {/* Price & Divider */}
+                        <div className="space-y-6">
+                            <p className="font-headline text-4xl text-primary">
                                 ${(product.price / 100).toFixed(2)}
-                            </span>
+                            </p>
+                            <div className="h-[1px] w-24 bg-primary opacity-20"></div>
                         </div>
 
-                        <form action="/api/checkout" method="POST">
-                            <input type="hidden" name="priceId" value={product.id} />
-                            <button
-                                type="submit"
-                                className="btn-primary w-full flex justify-between items-center group"
-                            >
-                                <span>Purchase Now</span>
-                                <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
-                            </button>
-                        </form>
+                        {/* Editorial Description */}
+                        <div className="space-y-6 font-body text-secondary text-lg leading-[1.8] font-light italic">
+                            {product.description.split('. ').map((sentence, idx) => (
+                                <p key={idx}>{sentence}.</p>
+                            ))}
+                        </div>
 
-                        {/* Trust badges */}
-                        <div className="flex items-center justify-center gap-6 mt-8 text-xs text-stone-400">
-                            <span className="flex items-center gap-2 glass-frosted px-3 py-1.5 rounded-full">
-                                <Shield size={14} />
-                                Secure checkout
-                            </span>
-                            <span className="flex items-center gap-2 glass-frosted px-3 py-1.5 rounded-full">
-                                <Truck size={14} />
-                                Worldwide shipping
-                            </span>
+                        {/* Action CTA */}
+                        <div className="space-y-10 pt-4">
+                            {session ? (
+                                <form action="/api/checkout" method="POST">
+                                    <input type="hidden" name="priceId" value={product.id} />
+                                    <button
+                                        type="submit"
+                                        className="btn-primary w-full py-6 text-xs tracking-[0.2em]"
+                                    >
+                                        Purchase Acquisition
+                                    </button>
+                                </form>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    className="btn-primary w-full py-6 text-xs tracking-[0.2em]"
+                                >
+                                    Purchase Acquisition
+                                </Link>
+                            )}
+
+                            {/* Metadata Chips / Archival Info */}
+                            <div className="flex flex-wrap gap-3">
+                                <span className="px-5 py-2 bg-secondary-container/50 text-on-secondary-container rounded-full text-[0.6rem] font-label uppercase tracking-widest font-bold">
+                                    {product.binding}
+                                </span>
+                                <span className="px-5 py-2 bg-secondary-container/50 text-on-secondary-container rounded-full text-[0.6rem] font-label uppercase tracking-widest font-bold">
+                                    Edition {product.edition}
+                                </span>
+                                <span className="px-5 py-2 bg-secondary-container/50 text-on-secondary-container rounded-full text-[0.6rem] font-label uppercase tracking-widest font-bold">
+                                    {product.pages} Pages
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+
+                {/* Return Anchor */}
+                <div className="mt-32 border-t border-outline-variant/10 pt-16">
+                    <Link href="/" className="font-label text-xs uppercase tracking-[0.3em] text-secondary hover:text-primary transition-colors inline-flex items-center gap-4 group">
+                        <span className="w-12 h-[1px] bg-secondary group-hover:bg-primary group-hover:w-16 transition-all duration-500"></span>
+                        Return to Archives
+                    </Link>
+                </div>
+            </main>
         </article>
     );
 }

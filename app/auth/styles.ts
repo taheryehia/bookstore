@@ -1,2 +1,0 @@
-export const authInputClasses = "w-full border-b border-stone-300 py-2 text-stone-900 placeholder:text-stone-400 focus:outline-none focus:border-stone-900 transition-colors font-serif bg-transparent";
-export const authButtonClasses = "w-full bg-stone-900 text-stone-50 py-3 uppercase tracking-widest text-xs font-bold hover:bg-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed";

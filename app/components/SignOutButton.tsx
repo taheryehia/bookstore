@@ -11,10 +11,10 @@ export function SignOutButton() {
                     signOut({ callbackUrl: "/" });
                 }
             }}
-            className="text-xs font-medium uppercase tracking-widest hover:text-stone-500 transition-colors flex items-center gap-2 glass-premium px-4 py-2 rounded-full"
+            className="font-label text-xs uppercase tracking-[0.2em] text-secondary hover:text-primary transition-colors flex items-center gap-2"
         >
-            <LogOut size={14} />
-            <span className="hidden sm:inline">Sign Out</span>
+            <LogOut size={14} strokeWidth={1.5} />
+            <span className="hidden lg:inline">Sign Out</span>
         </button>
     );
 }

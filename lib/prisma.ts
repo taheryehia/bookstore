@@ -34,7 +34,7 @@ function createPrismaClient() {
         }
     });
 
-    const adapter = new PrismaPg(pool);
+    const adapter = new PrismaPg(pool as any);
 
     return new PrismaClient({
         adapter: adapter as any, // Explicitly tell Prisma to use the 'pg' driver

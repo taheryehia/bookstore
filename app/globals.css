@@ -8,47 +8,11 @@
     }
 
     body {
-        @apply antialiased;
+        @apply antialiased bg-background text-on-surface;
     }
 
     ::selection {
-        @apply bg-stone-900 text-stone-50;
-    }
-}
-
-@layer components {
-    .glass-primary {
-        background-color: rgba(28, 25, 23, 0.85);
-        backdrop-filter: blur(20px) saturate(120%);
-        -webkit-backdrop-filter: blur(20px) saturate(120%);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        box-shadow:
-            0 20px 50px -10px rgba(28, 25, 23, 0.15),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-            inset 0 0 20px 0 rgba(28, 25, 23, 0.3);
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
-        background-repeat: repeat;
-        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-    }
-
-    .btn-primary {
-        @apply glass-primary text-stone-50 py-4 px-8 uppercase tracking-[0.25em] text-[10px] font-bold hover:bg-black hover:-translate-y-1 hover:shadow-2xl rounded-full active:scale-[0.98];
-    }
-
-    .btn-secondary {
-        @apply glass-button border-stone-200 text-stone-600 py-3 px-6 uppercase tracking-[0.2em] text-[10px] font-bold hover:border-stone-900 hover:text-stone-900 transition-all duration-300 ease-out rounded-full;
-    }
-
-    .link-underline {
-        @apply relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-current after:transition-all after:duration-300 hover:after:w-full;
-    }
-
-    .card-hover {
-        @apply transition-all duration-500 ease-out hover:shadow-2xl hover:shadow-stone-200/50 hover:-translate-y-1;
-    }
-
-    .gradient-text {
-        @apply bg-gradient-to-r from-stone-900 via-stone-700 to-stone-900 bg-clip-text text-transparent;
+        @apply bg-primary-fixed-dim text-on-primary-fixed;
     }
 }
 
@@ -59,14 +23,6 @@
 
     .animate-fade-in-up {
         animation: fadeInUp 0.8s ease-out forwards;
-    }
-
-    .animate-slide-in-left {
-        animation: slideInLeft 0.6s ease-out forwards;
-    }
-
-    .animate-slide-in-right {
-        animation: slideInRight 0.6s ease-out forwards;
     }
 
     .animate-scale-in {
@@ -97,70 +53,6 @@
         animation-delay: 0.5s;
     }
 
-    .glass {
-        @apply backdrop-blur-md bg-white/70 border border-white/20;
-    }
-
-    .glass-premium {
-        @apply backdrop-blur-xl bg-white-glass border border-white/30 shadow-glass-premium;
-    }
-
-    .glass-dark {
-        @apply backdrop-blur-xl bg-dark-glass border border-white/10 shadow-2xl;
-    }
-
-    .glass-frosted {
-        @apply backdrop-blur-xl bg-white-glass border border-white/30 shadow-glass-premium;
-    }
-
-    .glass-card {
-        background-color: rgba(255, 255, 255, 0.88);
-        backdrop-filter: blur(40px) saturate(110%);
-        -webkit-backdrop-filter: blur(40px) saturate(110%);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        box-shadow:
-            0 20px 50px -10px rgba(28, 25, 23, 0.1),
-            0 10px 20px -5px rgba(28, 25, 23, 0.04),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.6),
-            inset 0 0 30px 0 rgba(255, 255, 255, 0.4),
-            inset 10px 10px 20px -10px rgba(255, 255, 255, 0.8);
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
-        background-repeat: repeat;
-    }
-
-    .glass-button {
-        background-color: rgba(255, 255, 255, 0.6);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.5);
-        box-shadow:
-            0 10px 15px -3px rgba(0, 0, 0, 0.05),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.6),
-            inset 0 0 30px 0 rgba(255, 255, 255, 0.4);
-        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
-        background-repeat: repeat;
-        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-    }
-
-    .glass-button:hover {
-        background-color: rgba(255, 255, 255, 0.9);
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 30px 40px -10px rgba(0, 0, 0, 0.12);
-        border-color: rgba(255, 255, 255, 0.8);
-    }
-
-    /* Enhanced 'snowed' panel with micro-texture appearance */
-    .snowed-panel {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(40px);
-        -webkit-backdrop-filter: blur(40px);
-        border: 1px solid #ffffff;
-        box-shadow:
-            0 4px 30px rgba(0, 0, 0, 0.03),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.5),
-            inset 0 0 40px rgba(255, 255, 255, 0.8);
-    }
-
     .text-balance {
         text-wrap: balance;
     }
@@ -185,30 +77,6 @@
     to {
         opacity: 1;
         transform: translateY(0);
-    }
-}
-
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
     }
 }
 
@@ -242,20 +110,29 @@
 }
 
 ::-webkit-scrollbar-track {
-    background: #fafaf9;
+    background: #fbf9f4;
 }
 
 ::-webkit-scrollbar-thumb {
-    background: #d6d3d1;
+    background: #dbdad5;
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: #a8a29e;
+    background: #c4c6cd;
 }
 
 /* Focus visible enhancement */
 :focus-visible {
-    outline: 2px solid #1c1917;
+    outline: 2px solid #03192e;
     outline-offset: 2px;
+}
+
+/* Legacy support for components using btn-secondary (kept until refactored) */
+.btn-secondary {
+    @apply border border-outline-variant/30 text-primary px-8 py-4 rounded-md font-body font-bold text-sm tracking-wide uppercase hover:bg-surface-container-low transition-colors flex items-center justify-center;
+}
+
+.btn-primary {
+    @apply bg-ink-gradient text-on-primary py-4 px-8 uppercase tracking-[0.2em] text-[10px] font-bold hover:scale-[1.02] shadow-ambient transition-all duration-300 ease-out rounded-md active:scale-[0.98] flex items-center justify-center;
 }

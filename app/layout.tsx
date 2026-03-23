@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
+import { Noto_Serif, Manrope } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/app/components/Header";
 import { Footer } from "@/app/components/Footer";
 import { Providers } from "./components/Providers";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair" });
+const notoSerif = Noto_Serif({ subsets: ["latin"], variable: "--font-noto-serif", weight: ["400", "700"], style: ["normal", "italic"] });
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope" });
 
 export const metadata: Metadata = {
     metadataBase: process.env.NEXT_PUBLIC_URL ? new URL(process.env.NEXT_PUBLIC_URL) : undefined,
-    title: "Editorial | Curated Objects",
-    description: "A collection of premium books and digital releases.",
+    title: "Sign In | The Literary Atelier",
+    description: "Curated for the discerning reader.",
     openGraph: {
-        title: "Editorial | Curated Objects",
-        description: "A collection of premium books and digital releases.",
+        title: "Sign In | The Literary Atelier",
+        description: "Curated for the discerning reader.",
         type: "website",
     },
 };
@@ -26,7 +26,7 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={`${inter.variable} ${playfair.variable} font-sans antialiased bg-stone-50 text-stone-900 flex flex-col min-h-screen selection:bg-stone-200`}>
+            <body className={`${notoSerif.variable} ${manrope.variable} font-body antialiased bg-background text-on-surface flex flex-col min-h-screen selection:bg-primary selection:text-on-primary`}>
                 <Providers>
                     <Header />
                     <main className="flex-grow">

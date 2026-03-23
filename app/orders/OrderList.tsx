@@ -5,8 +5,8 @@ import { getProductById } from "@/lib/products";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Package, XCircle, ArrowRight } from "lucide-react";
 
-// Define strict type matching the DB or simplified
 interface DBOrder {
     id: string;
     stripeSessionId: string;
@@ -20,7 +20,7 @@ export function OrderList({ initialOrders }: { initialOrders: DBOrder[] }) {
     const [refundingFnId, setRefundingFnId] = useState<string | null>(null);
 
     const handleRefund = async (orderId: string) => {
-        if (!confirm("Are you sure you want to refund this item? Use this mainly for testing.")) return;
+        if (!confirm("Are you sure you want to refund this item?")) return;
 
         setRefundingFnId(orderId);
         try {
@@ -31,9 +31,9 @@ export function OrderList({ initialOrders }: { initialOrders: DBOrder[] }) {
             });
 
             if (res.ok) {
-                router.refresh(); // Refresh server component data
+                router.refresh();
             } else {
-                alert("Refund failed. Check console.");
+                alert("Refund failed. Please contact support.");
             }
         } catch (error) {
             console.error(error);
@@ -45,74 +45,104 @@ export function OrderList({ initialOrders }: { initialOrders: DBOrder[] }) {
 
     if (initialOrders.length === 0) {
         return (
-            <div className="glass-card p-12 text-center rounded-3xl animate-fade-in">
-                <p className="text-stone-500 mb-6 font-serif italic">
-                    No verified records found.
+            <div className="bg-surface-container-low p-12 text-center rounded-lg animate-fade-in py-32 border border-outline-variant/10">
+                <p className="text-secondary mb-8 font-headline text-2xl italic">
+                    Your collection is currently empty.
                 </p>
-                <Link href="/" className="text-xs font-bold tracking-widest uppercase border-b border-black pb-1 hover:opacity-50 transition-opacity">
-                    Browse Archive
+                <Link href="/" className="btn-primary inline-flex items-center gap-2 group">
+                    Begin Your Curation
+                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
             </div>
         );
     }
 
     return (
-        <div className="flex flex-col gap-4 glass-card p-6 md:p-8 rounded-3xl animate-fade-in-up">
-            {initialOrders.map((order) => {
-                const product = getProductById(order.productId);
-                if (!product) return null;
+        <div className="space-y-16 animate-fade-in-up">
+            <h3 className="font-label text-xs uppercase tracking-[0.2em] text-secondary mb-8 pb-2 border-b border-outline-variant/20">Summary of Acquisitions</h3>
 
-                const isRefunding = refundingFnId === order.id;
-                const isRefunded = order.status === "refunded";
+            <div className="space-y-16">
+                {initialOrders.map((order) => {
+                    const product = getProductById(order.productId);
+                    if (!product) return null;
 
-                return (
-                    <div key={order.id} className={`flex flex-col sm:flex-row gap-6 items-start py-6 border-b border-stone-100/50 last:border-0 hover:bg-white/30 transition-colors p-4 rounded-xl ${isRefunded ? 'opacity-50 grayscale' : ''}`}>
-                        <Link href={`/product/${product.slug}`} className="w-20 h-24 bg-stone-100 relative shrink-0 hover:opacity-80 transition-opacity overflow-hidden rounded-lg block shadow-sm mx-auto sm:mx-0">
-                            {product.image && (
-                                <Image
-                                    src={product.image}
-                                    alt={product.title}
-                                    fill
-                                    className="object-cover"
-                                />
-                            )}
-                        </Link>
-                        <div className="flex-1 w-full text-center sm:text-left">
-                            <div className="flex flex-col sm:flex-row justify-between items-center sm:items-start mb-2 gap-2">
-                                <h3 className="font-serif text-xl text-stone-900 leading-tight">
-                                    <Link href={`/product/${product.slug}`} className="hover:text-stone-600 transition-colors underline decoration-stone-200 decoration-1 underline-offset-4 sm:no-underline">
-                                        {product.title}
-                                    </Link>
-                                </h3>
-                                <span className="text-[10px] sm:text-xs font-mono text-stone-400 shrink-0">
-                                    {new Date(order.createdAt).toLocaleDateString()}
-                                </span>
+                    const isRefunding = refundingFnId === order.id;
+                    const isRefunded = order.status === "refunded";
+
+                    return (
+                        <div key={order.id} className={`flex flex-col sm:flex-row gap-10 group relative transition-opacity duration-300 ${isRefunded ? 'opacity-40 grayscale pointer-events-none' : ''}`}>
+                            {/* Decorative order number / background */}
+                            <div className="absolute -left-12 top-0 text-outline-variant/20 font-headline italic text-8xl -z-10 select-none hidden lg:block">
+                                #{order.id.slice(-4).toUpperCase()}
                             </div>
-                            <p className="text-sm text-stone-500 mb-6 font-light truncate max-w-full italic">{product.subtitle}</p>
-                            <div className="text-[10px] sm:text-xs font-mono text-stone-400 uppercase tracking-widest flex flex-wrap justify-center sm:justify-start gap-4 items-center">
-                                <span className="bg-stone-50/50 px-2 py-1 rounded">PID: {order.productId.slice(-6)}</span>
-                                {isRefunded ? (
-                                    <span className="text-[10px] bg-stone-100/50 text-stone-500 line-through px-3 py-1 rounded-full border border-stone-200/50">Refunded</span>
-                                ) : (
-                                    <span className="text-[11px] glass-frosted bg-green-500/10 text-green-700 font-black tracking-[0.2em] px-6 py-2.5 rounded-xl border border-green-400/30 shadow-md saturate-[1.8] animate-pulse-subtle">
-                                        CONFIRMED
-                                    </span>
-                                )}
 
-                                {!isRefunded && (
-                                    <button
-                                        onClick={() => handleRefund(order.id)}
-                                        disabled={isRefunding}
-                                        className="ml-auto text-[9px] font-bold text-stone-400 hover:text-red-500 uppercase tracking-[0.2em] transition-colors disabled:opacity-50 underline decoration-stone-200 underline-offset-4"
-                                    >
-                                        {isRefunding ? "Processing..." : "Refund"}
-                                    </button>
+                            <Link href={`/product/${product.slug}`} className="w-32 h-44 bg-surface-variant flex-shrink-0 shadow-sm relative overflow-hidden rounded-sm group-hover:scale-[1.02] transition-transform duration-500">
+                                {product.image && (
+                                    <Image
+                                        src={product.image}
+                                        alt={product.title}
+                                        fill
+                                        className="object-cover"
+                                        sizes="128px"
+                                    />
                                 )}
+                                <div className="absolute inset-0 bg-primary/5"></div>
+                            </Link>
+
+                            <div className="flex-grow py-2 flex flex-col justify-between">
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <h4 className="font-headline text-2xl text-primary leading-tight">
+                                            {product.title}
+                                        </h4>
+                                        <p className="font-body text-secondary text-sm italic">{product.subtitle}</p>
+                                        <div className="flex items-center gap-4 mt-4">
+                                            <p className="font-label text-[10px] text-outline tracking-widest uppercase">
+                                                ID: {order.id.slice(-10)}
+                                            </p>
+                                            <span className="w-1 h-1 rounded-full bg-outline-variant/30"></span>
+                                            <p className="font-label text-[10px] text-outline tracking-widest uppercase">
+                                                {new Date(order.createdAt).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="font-headline text-xl text-primary">
+                                            ${(product.price / 100).toFixed(2)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-8">
+                                    <div className="flex items-center text-xs text-secondary italic">
+                                        {isRefunded ? (
+                                            <div className="flex items-center gap-2 text-error">
+                                                <XCircle size={14} />
+                                                DE-ACCESSIONED
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-2">
+                                                <Package size={14} strokeWidth={1.5} />
+                                                1 UNIT SECURED · PREPARING PROVENANCE
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {!isRefunded && (
+                                        <button
+                                            onClick={() => handleRefund(order.id)}
+                                            disabled={isRefunding}
+                                            className="text-[10px] font-label font-bold text-secondary hover:text-error uppercase tracking-widest transition-colors disabled:opacity-50 underline decoration-outline-variant/30 underline-offset-8"
+                                        >
+                                            {isRefunding ? "Processing..." : "Refund Acquisition"}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                );
-            })}
+                    );
+                })}
+            </div>
         </div>
     );
 }
