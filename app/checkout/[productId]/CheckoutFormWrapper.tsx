@@ -6,7 +6,13 @@ import { Elements } from "@stripe/react-stripe-js";
 import CheckoutForm from "./CheckoutForm";
 
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!, {
+    developerTools: {
+        assistant: {
+            enabled: false
+        }
+    }
+});
 
 export default function CheckoutFormWrapper({ productId, price }: { productId: string, price: number }) {
     const [clientSecret, setClientSecret] = useState("");
@@ -80,11 +86,6 @@ export default function CheckoutFormWrapper({ productId, price }: { productId: s
     const elementOptions: any = {
         clientSecret,
         appearance,
-        developerTools: {
-            assistant: {
-                enabled: false
-            }
-        }
     };
 
     return (
