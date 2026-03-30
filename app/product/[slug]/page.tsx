@@ -99,15 +99,12 @@ export default async function ProductPage({
                         {/* Action CTA */}
                         <div className="space-y-10 pt-4">
                             {session ? (
-                                <form action="/api/checkout" method="POST">
-                                    <input type="hidden" name="priceId" value={product.id} />
-                                    <button
-                                        type="submit"
-                                        className="btn-primary w-full py-6 text-xs tracking-[0.2em]"
-                                    >
-                                        Purchase Acquisition
-                                    </button>
-                                </form>
+                                <Link
+                                    href={`/checkout/${product.id}`}
+                                    className="btn-primary w-full py-6 text-xs flex items-center justify-center tracking-[0.2em]"
+                                >
+                                    Purchase Acquisition
+                                </Link>
                             ) : (
                                 <Link
                                     href="/login"

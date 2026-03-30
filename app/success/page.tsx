@@ -5,9 +5,9 @@ import { CheckCircle, ArrowRight, Package } from "lucide-react";
 export default async function SuccessPage({
     searchParams,
 }: {
-    searchParams: Promise<{ session_id: string; product_id: string }>;
+    searchParams: Promise<{ payment_intent: string; product_id: string }>;
 }) {
-    const { session_id, product_id } = await searchParams;
+    const { payment_intent, product_id } = await searchParams;
 
     return (
         <section className="min-h-[80vh] flex flex-col justify-center items-center text-center px-6 py-24 animate-fade-in">
@@ -28,12 +28,12 @@ export default async function SuccessPage({
             { }
             <div className="mt-8 px-6 py-3 bg-stone-100 rounded-full">
                 <span className="text-xs font-mono text-stone-500 uppercase tracking-wider">
-                    Reference: {session_id?.slice(-12) || "PENDING"}
+                    Reference: {payment_intent?.slice(-12) || "PENDING"}
                 </span>
             </div>
 
             { }
-            <OrderSaver sessionId={session_id} productId={product_id} />
+            <OrderSaver sessionId={payment_intent} productId={product_id} />
 
             { }
             <div className="mt-12 p-6 bg-stone-50 rounded-lg border border-stone-100 max-w-md w-full">

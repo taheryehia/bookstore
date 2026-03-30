@@ -32,11 +32,9 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Already refunded" }, { status: 400 });
         }
 
-        const checkoutSession = await stripe.checkout.sessions.retrieve(order.stripeSessionId);
-        const paymentIntentId = checkoutSession.payment_intent as string;
-
+        // Now that we use Payment Intents directly, the stored stripeSessionId is the payment_intent ID.
         await stripe.refunds.create({
-            payment_intent: paymentIntentId,
+            payment_intent: order.stripeSessionId,
         });
 
         await prisma.order.update({
