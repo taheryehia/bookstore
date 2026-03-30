@@ -46,6 +46,8 @@ export default function CheckoutForm({ amount, productId }: { amount: number, pr
         });
     }, [stripe]);
 
+    const [isExpressAvailable, setIsExpressAvailable] = useState<boolean | null>(null);
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -95,22 +97,36 @@ export default function CheckoutForm({ amount, productId }: { amount: number, pr
 
     return (
         <form id="payment-form" onSubmit={handleSubmit} className="space-y-8">
-            <div className="mb-6">
-                <ExpressCheckoutElement
-                    onConfirm={confirmExpressCheckout}
-                    options={{
-                        buttonType: {
-                            applePay: 'buy',
-                            googlePay: 'buy'
-                        }
-                    }}
-                />
-            </div>
 
-            <div className="flex items-center gap-4 py-2">
-                <div className="h-[1px] flex-1 bg-outline-variant/30"></div>
-                <span className="font-label text-[0.6rem] uppercase tracking-widest text-secondary">Or pay with card</span>
-                <div className="h-[1px] flex-1 bg-outline-variant/30"></div>
+            {/* Express Checkout section - hidden during calculation, removed if unavailable */}
+            <div className={isExpressAvailable === false ? 'hidden' : ''}>
+                <div className={`transition-opacity duration-300 ${isExpressAvailable === null ? 'opacity-0 h-0 overflow-hidden absolute' : 'opacity-100 mb-6 relative'}`}>
+                    <ExpressCheckoutElement
+                        onConfirm={confirmExpressCheckout}
+                        onReady={({ availablePaymentMethods }) => {
+                            if (availablePaymentMethods && (availablePaymentMethods.applePay || availablePaymentMethods.googlePay || availablePaymentMethods.link)) {
+                                setIsExpressAvailable(true);
+                            } else {
+                                setIsExpressAvailable(false);
+                            }
+                        }}
+                        options={{
+                            buttonType: {
+                                applePay: 'buy',
+                                googlePay: 'buy'
+                            }
+                        }}
+                    />
+                </div>
+
+                {/* Only show the divider if express checkout is fully loaded and available */}
+                {isExpressAvailable === true && (
+                    <div className="flex items-center gap-4 py-2 animate-fade-in">
+                        <div className="h-[1px] flex-1 bg-outline-variant/30"></div>
+                        <span className="font-label text-[0.6rem] uppercase tracking-widest text-secondary">Or pay with card</span>
+                        <div className="h-[1px] flex-1 bg-outline-variant/30"></div>
+                    </div>
+                )}
             </div>
 
             <PaymentElement id="payment-element" options={paymentElementOptions} />
