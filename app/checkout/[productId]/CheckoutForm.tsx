@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import {
     PaymentElement,
+    ExpressCheckoutElement,
     useStripe,
     useElements
 } from "@stripe/react-stripe-js";
@@ -74,8 +75,44 @@ export default function CheckoutForm({ amount, productId }: { amount: number, pr
         layout: "tabs" as const
     };
 
+    const confirmExpressCheckout = async () => {
+        if (!stripe || !elements) return;
+
+        const { error } = await stripe.confirmPayment({
+            elements,
+            clientSecret: new URLSearchParams(window.location.search).get(
+                "payment_intent_client_secret"
+            ) || undefined,
+            confirmParams: {
+                return_url: `${window.location.origin}/success?product_id=${productId}`,
+            },
+        });
+
+        if (error) {
+            setMessage(error.message || "An error occurred");
+        }
+    };
+
     return (
         <form id="payment-form" onSubmit={handleSubmit} className="space-y-8">
+            <div className="mb-6">
+                <ExpressCheckoutElement
+                    onConfirm={confirmExpressCheckout}
+                    options={{
+                        buttonType: {
+                            applePay: 'buy',
+                            googlePay: 'buy'
+                        }
+                    }}
+                />
+            </div>
+
+            <div className="flex items-center gap-4 py-2">
+                <div className="h-[1px] flex-1 bg-outline-variant/30"></div>
+                <span className="font-label text-[0.6rem] uppercase tracking-widest text-secondary">Or pay with card</span>
+                <div className="h-[1px] flex-1 bg-outline-variant/30"></div>
+            </div>
+
             <PaymentElement id="payment-element" options={paymentElementOptions} />
 
             <button

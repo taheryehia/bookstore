@@ -5,8 +5,7 @@ import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import CheckoutForm from "./CheckoutForm";
 
-// Make sure to call `loadStripe` outside of a component's render to avoid
-// recreating the `Stripe` object on every render.
+
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function CheckoutFormWrapper({ productId, price }: { productId: string, price: number }) {
@@ -40,7 +39,7 @@ export default function CheckoutFormWrapper({ productId, price }: { productId: s
     }, [productId]);
 
     const appearance = {
-        theme: 'stripe' as const,
+        theme: 'flat' as const,
         variables: {
             colorPrimary: '#03192e',
             colorBackground: '#ffffff',
@@ -78,10 +77,23 @@ export default function CheckoutFormWrapper({ productId, price }: { productId: s
         );
     }
 
+    const elementOptions: any = {
+        clientSecret,
+        appearance,
+        developerTools: {
+            assistant: {
+                enabled: false
+            }
+        }
+    };
+
     return (
         <div className="w-full">
             {clientSecret ? (
-                <Elements options={{ clientSecret, appearance }} stripe={stripePromise}>
+                <Elements
+                    options={elementOptions}
+                    stripe={stripePromise}
+                >
                     <CheckoutForm amount={price} productId={productId} />
                 </Elements>
             ) : (
